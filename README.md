@@ -16,3 +16,8 @@ Here are the most significant libraries of this project:
 * [node-jsonwebtoken](https://github.com/auth0/node-jsonwebtoken)
 
 After, the user is authenticated by Google, pale-dai generates a JWT based token(using private key) and redirects the user back to the original requested service(like senani). The original requested service decrypts the JWT(using public key) and knows that the user is authenticated.
+
+Here are a few questions that may arise:
+### 1) How do you make sure that the service that requested authentication is actually our internal service?
+Pale-dai maintains a list of our internal service somewhere(maybe in a simple json file). So, when a internal service sends a user to pale-dai for authentication, it is actually redirected to `pale-dai.introcept.com/login?redirect=senani.introcept.co`. It makes sure that the service is actually valid. Then, pale-dai redirects the user back to `senani.introcept.co`. 
+If some dangerous external service(like danger.example.com) redirects the user to `pale-dai.introcept.com/login?redirect=danger.example.com`, pale-dai knows that the some fraudelent external service is requesting jwt and blocks the user authentication and redirection.
