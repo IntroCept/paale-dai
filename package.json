@@ -1,0 +1,32 @@
+{
+  "name": "pale-dai",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "node_modules/.bin/babel src -d dist --presets es2015",
+    "serve": "env $(cat .env | grep -v ^# | xargs) node dist/server.js",
+    "start": "npm run build && npm run serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ojhaujjwal/pale-dai.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ojhaujjwal/pale-dai/issues"
+  },
+  "homepage": "https://github.com/ojhaujjwal/pale-dai#readme",
+  "dependencies": {
+    "append-query": "^2.0.0",
+    "base64-url": "^1.3.2",
+    "denodeify": "^1.2.1",
+    "express": "^4.14.0",
+    "googleapis": "^14.0.0",
+    "jsonwebtoken": "^7.1.9"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.16.0",
+    "babel-preset-es2015": "^6.16.0"
+  }
+}
