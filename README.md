@@ -21,3 +21,14 @@ Here are a few questions that may arise:
 ### 1) How do you make sure that the service that requested authentication is actually our internal service?
 When a internal service sends a user to pale-dai for authentication, it is actually redirected to `pale-dai.introcept.com?service=senani.introcept.co`. It makes sure that the service is actually valid. Then, pale-dai redirects the user back to `senani.introcept.co`. 
 If some dangerous external service(like danger.example.com) redirects the user to `pale-dai.introcept.com/login?redirect=danger.example.com`, pale-dai knows that the some fraudelent external service is requesting jwt and blocks the user authentication and redirection.
+
+## Installation instructions
+* First clone the repo
+* Run `npm install`
+* Generate private/public pair key for jwt encryption
+```
+openssl genrsa -out data/jwt-private.key 2048
+openssl rsa -in data/jwt-private.key -pubout > data/jwt.pub
+```
+* copy .env.sample to .env and edit the google client credentials.
+* Distribute data/jwt.pub to the services that requires integration with pale-dai for authentication
