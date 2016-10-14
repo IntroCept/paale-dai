@@ -1,0 +1,26 @@
+version: '2'
+
+services:
+
+### Node Container ######################
+
+    node:
+        build:
+            context: .docker/node
+            args:
+                - PUID=1000
+                - PGID=1000
+        ports:
+            - "3000:3000"
+        volumes_from:
+            - volumes_source
+        env_file:
+          - ./.env
+
+
+### Application Code Container ######################
+
+    volumes_source:
+        build: .docker/volumes/application
+        volumes:
+            - "./:/var/www/paale-dai"
