@@ -29,10 +29,10 @@ const validateService = function (req, res, next) {
     return res.send('Redirect service is absent');
   }
 
-  var serviceUrl = url.parse(req.query.service, true);
+  const serviceUrl = url.parse(req.query.service, true);
 
   // check if domains ends with introcept.co
-  var domains = serviceUrl.hostname.split('.');
+  const domains = serviceUrl.hostname.split('.');
   if (domains.pop() !== 'co' && domains.pop() !== 'introcept') {
     return res.send('Invalid service');
   }
@@ -75,7 +75,7 @@ app.get(config.google.callback, [
       return res.send('Authorization code is absent');
     }
 
-    var oauth2Client = new OAuth2(
+    const oauth2Client = new OAuth2(
       config.google.clientId,
       config.google.clientSecret,
       req.protocol + '://' + req.hostname + ':' + config.port + config.google.callback
@@ -86,7 +86,7 @@ app.get(config.google.callback, [
         oauth2Client.setCredentials(tokens);
         return denodeify(plus.people.get)({userId: 'me', auth: oauth2Client });
       }).then(function(response) {
-        var email = response.emails[0].value;
+        const email = response.emails[0].value;
 
         if (response.domain !== 'introcept.co') {
           return res.send('You must have an email address from introcept.co');
