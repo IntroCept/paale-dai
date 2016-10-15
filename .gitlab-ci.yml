@@ -1,0 +1,29 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+before_script:
+  - docker info
+  - apk update
+  - apk upgrade
+  - apk add python python-dev py-pip build-base
+  - pip install docker-compose
+
+variables:
+  PROJECT_NAME: paaledai$CI_BUILD_REF
+  COMPOSE: docker-compose -p $PROJECT_NAME
+
+after_script:
+  - $COMPOSE down
+  - $COMPOSE rm -f
+
+stages:
+  - test
+
+test:
+  stage: test
+  script:
+    - $COMPOSE build
+    - $COMPOSE run application npm install
+    - $COMPOSE run --rm application npm run test
