@@ -6,7 +6,8 @@
     "build": "node_modules/.bin/babel src -d dist",
     "serve": "env $(cat .env | grep -v ^# | xargs) node dist/server.js",
     "start": "npm run build && npm run serve",
-    "nodemon": "node_modules/.bin/nodemon --exec 'npm start' --watch src"
+    "nodemon": "node_modules/.bin/nodemon --exec 'npm start' --watch src",
+    "test": "npm run build && node_modules/.bin/mocha tests/unit tests/acceptance"
   },
   "repository": {
     "type": "git",
@@ -26,9 +27,14 @@
     "denodeify": "^1.2.1",
     "express": "^4.14.0",
     "googleapis": "^14.0.0",
-    "jsonwebtoken": "^7.1.9"
+    "jsonwebtoken": "^7.1.9",
+    "lodash": "^4.16.4",
+    "supertest": "^2.0.0"
   },
   "devDependencies": {
-    "nodemon": "^1.11.0"
+    "mocha": "^3.1.2",
+    "nodemon": "^1.11.0",
+    "proxyquire": "^1.7.10",
+    "should": "^11.1.1"
   }
 }

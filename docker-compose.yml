@@ -4,7 +4,7 @@ services:
 
 ### Node Container ######################
 
-    node:
+    application:
         build:
             context: .docker/node
             args:
@@ -14,8 +14,6 @@ services:
             - "3000:3000"
         volumes_from:
             - volumes_source
-        env_file:
-          - ./.env
 
 
 ### Application Code Container ######################
