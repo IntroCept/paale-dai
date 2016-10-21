@@ -1,0 +1,22 @@
+#!/bin/bash
+
+curl -L https://download.getcarina.com/carina/latest/$(uname -s)/$(uname -m)/carina -o carina
+mv carina /bin/carina
+chmod u+x /bin/carina
+
+eval $(carina env paale-dai)
+
+# check if logged in
+docker info
+
+# run node application container
+docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN registry.gitlab.com
+docker pull registry.gitlab.com/introcept/paale-dai
+docker rm --force node_application || true # ingore exit code if no container exists
+docker run --env GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID \
+    --env GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET \
+    --env JWT_PRIVATE_KEY="$JWT_PRIVATE_KEY" \
+    -d -p 80:80 --name=node_application --restart=always registry.gitlab.com/introcept/paale-dai
+
+#check running containers and verify paale-dai's node_application is running
+docker ps

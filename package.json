@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "node_modules/.bin/babel src -d dist",
+    "build": "babel src -d dist",
     "serve": "env $(cat .env | grep -v ^# | xargs) node dist/server.js",
     "start": "npm run build && npm run serve",
-    "nodemon": "node_modules/.bin/nodemon --exec 'npm start' --watch src",
+    "nodemon": "nodemon --exec 'npm start' --watch src",
     "test": "npm run build && node_modules/.bin/mocha tests/unit tests/acceptance"
   },
   "repository": {

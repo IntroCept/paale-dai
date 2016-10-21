@@ -15,7 +15,8 @@ export default {
     callback: '/google-callback'
   },
   jwt: {
-    key: process.env.JWT_PRIVATE_KEY ? fs.readFileSync(process.env.JWT_PRIVATE_KEY) : 'pale-dai',
+    key: process.env.JWT_PRIVATE_KEY_FILE ? fs.readFileSync(process.env.JWT_PRIVATE_KEY_FILE)
+      : (process.env.JWT_PRIVATE_KEY ? Buffer.from(process.env.JWT_PRIVATE_KEY) : 'pale-dai'),
     expiresIn: process.env.TOKEN_EXPIRY || 3600 // 1 hour by default
   }
 };

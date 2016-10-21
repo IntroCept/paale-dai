@@ -1,0 +1,12 @@
+FROM mhart/alpine-node:6.8
+COPY . /var/www/paale-dai
+
+WORKDIR /var/www/paale-dai
+
+RUN chown -R root:root /var/www/paale-dai\
+    && npm install --no-dev\
+    && npm run build
+
+EXPOSE 80
+
+CMD PORT=80 node dist/server.js

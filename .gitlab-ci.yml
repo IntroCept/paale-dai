@@ -1,29 +1,37 @@
-image: docker:latest
+image: docker:1.11.2
 
 services:
   - docker:dind
 
-before_script:
-  - docker info
-  - apk update
-  - apk upgrade
-  - apk add python python-dev py-pip build-base
-  - pip install docker-compose
-
-variables:
-  PROJECT_NAME: paaledai$CI_BUILD_REF
-  COMPOSE: docker-compose -p $PROJECT_NAME
-
-after_script:
-  - $COMPOSE down
-  - $COMPOSE rm -f
-
 stages:
   - test
+  - build
+  - deploy
+
+variables:
+  REGISTRY: registry.gitlab.com
+  CONTAINER_RELEASE_IMAGE: $REGISTRY/introcept/paale-dai:latest
 
 test:
   stage: test
   script:
-    - $COMPOSE build
-    - $COMPOSE run application npm install
-    - $COMPOSE run --rm application npm run test
+    - docker build -t paale-dai -f .docker/node/Dockerfile .
+    - docker run -v $PWD:/var/www/paale-dai paale-dai npm install
+    - docker run -v $PWD:/var/www/paale-dai paale-dai npm test
+
+build:
+  stage: build
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY
+    - docker build -t $CONTAINER_RELEASE_IMAGE  -f .docker/node/Dockerfile-production .
+    - docker push $CONTAINER_RELEASE_IMAGE
+  only:
+    - master
+
+deploy:
+  stage: deploy
+  script:
+    - apk add --update --no-cache bash
+    - bash ./deploy
+  only:
+    - master
