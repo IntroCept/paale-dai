@@ -19,6 +19,6 @@ services:
 ### Application Code Container ######################
 
     volumes_source:
-        build: .docker/volumes/application
+        image: tianon/true
         volumes:
             - "./:/var/www/paale-dai"
