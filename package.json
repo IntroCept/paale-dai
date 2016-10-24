@@ -7,7 +7,9 @@
     "serve": "env $(cat .env | grep -v ^# | xargs) node dist/server.js",
     "start": "npm run build && npm run serve",
     "nodemon": "nodemon --exec 'npm start' --watch src",
-    "test": "npm run build && node_modules/.bin/mocha tests/unit tests/acceptance"
+    "test": "npm run build && node_modules/.bin/mocha tests/unit tests/acceptance",
+    "test-ci": "npm run build && istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec tests/unit tests/acceptance",
+    "coverage": "npm run build && istanbul cover node_modules/mocha/bin/_mocha --  --reporter dot tests/unit tests/acceptance"
   },
   "repository": {
     "type": "git",
@@ -27,6 +29,7 @@
     "denodeify": "^1.2.1",
     "express": "^4.14.0",
     "googleapis": "^14.0.0",
+    "istanbul": "^0.4.5",
     "jsonwebtoken": "^7.1.9",
     "lodash": "^4.16.4",
     "supertest": "^2.0.0"
