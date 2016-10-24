@@ -1,6 +1,7 @@
 paale-dai
 ===================
 [![build status](https://gitlab.com/introcept/paale-dai/badges/master/build.svg)](https://gitlab.com/introcept/paale-dai/commits/master)
+[![coverage report](https://gitlab.com/introcept/paale-dai/badges/master/coverage.svg)](https://gitlab.com/introcept/paale-dai/commits/master)
 
 paale-dai is a very simple Node.js based application which acts as a SSO(Single Sign On) microservice for authenticating users for Introcept's internal applications like senani, chakka etc.
 
