@@ -16,7 +16,7 @@ test:
   stage: test
   script:
     - docker build -t paale-dai -f .docker/node/Dockerfile .
-    - docker run -v $PWD:/var/www/paale-dai paale-dai npm install
+    - docker run -v $PWD:/var/www/paale-dai paale-dai yarn
     - docker run -v $PWD:/var/www/paale-dai paale-dai npm run test-ci
 
 build:

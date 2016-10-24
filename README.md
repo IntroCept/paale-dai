@@ -27,7 +27,7 @@ If some dangerous external service(like danger.example.com) redirects the user t
 
 ## Installation instructions
 * First clone the repo
-* Run `npm install`
+* Run `docker-compose up -d`
 * Generate private/public pair key for jwt encryption
 ```
 openssl genrsa -out data/jwt-private.key 2048

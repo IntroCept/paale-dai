@@ -4,7 +4,8 @@ COPY . /var/www/paale-dai
 WORKDIR /var/www/paale-dai
 
 RUN chown -R root:root /var/www/paale-dai\
-    && npm install --no-dev\
+    && npm install -g yarn\
+    && yarn\
     && npm run build
 
 EXPOSE 80
