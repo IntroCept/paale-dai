@@ -27,11 +27,11 @@ If some dangerous external service(like danger.example.com) redirects the user t
 
 ## Installation instructions
 * First clone the repo
-* Run `docker-compose up -d`
 * Generate private/public pair key for jwt encryption
 ```
 openssl genrsa -out data/jwt-private.key 2048
 openssl rsa -in data/jwt-private.key -pubout > data/jwt.pub
 ```
 * copy .env.sample to .env and edit the google client credentials.
+* Run `docker-compose up -d`
 * Distribute data/jwt.pub to the services that requires integration with pale-dai for authentication
