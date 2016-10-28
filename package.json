@@ -8,7 +8,8 @@
     "start": "npm run build && npm run serve",
     "nodemon": "nodemon --exec 'npm start' --watch src",
     "test": "npm run build && node_modules/.bin/mocha tests/unit tests/acceptance",
-    "test-ci": "npm run build && istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec tests/unit tests/acceptance",
+    "lint": "eslint src/",
+    "test-ci": "npm run lint && npm run build && istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec tests/unit tests/acceptance",
     "coverage": "npm run build && istanbul cover node_modules/mocha/bin/_mocha --  --reporter dot tests/unit tests/acceptance"
   },
   "repository": {
@@ -35,6 +36,9 @@
     "supertest": "^2.0.0"
   },
   "devDependencies": {
+    "eslint": "^3.8.1",
+    "eslint-config-airbnb-base": "^9.0.0",
+    "eslint-plugin-import": "^2.0.1",
     "mocha": "^3.1.2",
     "nodemon": "^1.11.0",
     "proxyquire": "^1.7.10",

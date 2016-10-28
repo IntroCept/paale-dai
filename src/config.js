@@ -1,6 +1,13 @@
-'use strict';
+
 
 import fs from 'fs';
+
+let jwtKey;
+if (process.env.JWT_PRIVATE_KEY_FILE) {
+  jwtKey = fs.readFileSync(process.env.JWT_PRIVATE_KEY_FILE);
+} else {
+  jwtKey = process.env.JWT_PRIVATE_KEY ? Buffer.from(process.env.JWT_PRIVATE_KEY) : 'pale-dai';
+}
 
 export default {
   env: process.env.NODE_ENV || 'development',
@@ -12,11 +19,10 @@ export default {
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID || 'client id',
     clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'client secret',
-    callback: '/google-callback'
+    callback: '/google-callback',
   },
   jwt: {
-    key: process.env.JWT_PRIVATE_KEY_FILE ? fs.readFileSync(process.env.JWT_PRIVATE_KEY_FILE)
-      : (process.env.JWT_PRIVATE_KEY ? Buffer.from(process.env.JWT_PRIVATE_KEY) : 'pale-dai'),
-    expiresIn: process.env.TOKEN_EXPIRY || 3600 // 1 hour by default
-  }
+    key: jwtKey,
+    expiresIn: process.env.TOKEN_EXPIRY || 3600, // 1 hour by default
+  },
 };
