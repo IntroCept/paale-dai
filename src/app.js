@@ -37,7 +37,11 @@ app.get('/', [
 
     res.redirect(oauth2Client.generateAuthUrl({
       access_type: 'online',
-      scope: ['https://www.googleapis.com/auth/plus.me', 'https://www.googleapis.com/auth/userinfo.email'],
+      scope: [
+        'https://www.googleapis.com/auth/plus.me',
+        'https://www.googleapis.com/auth/userinfo.email',
+        'https://www.googleapis.com/auth/userinfo.profile',
+      ],
       state: stateEncoder.encode(req.query.service),
     }));
   },
@@ -78,8 +82,12 @@ app.get(config.google.callback, [
         }
 
         return denodeify(jwt.sign)({
+          id: response.id,
+          displayName: response.displayName,
+          name: response.name,
           email: response.emails[0].value,
-        }, config.jwt.key, { algorithm: 'RS256', expiresIn: config.jwt.expiresIn });
+          image: response.image.url,
+        }, config.jwt.key, { algorithm: config.jwt.algorithm, expiresIn: config.jwt.expiresIn });
       }).then((token) => {
         if (!token) return;
 
@@ -88,5 +96,42 @@ app.get(config.google.callback, [
       .catch(next);
   },
 ]);
+
+app.get('/me', (req, res, next) => {
+  let parts = req.get('Authorization');
+  if (!parts) {
+    return res.status(401).send({ message: 'Unauthenticated' });
+  }
+
+  parts = parts.split(' ');
+
+  if (parts.length !== 2) {
+    return res.status(400).send({ message: 'Incorrect Authorization header format' });
+  }
+
+  const token = parts[1];
+
+  return denodeify(jwt.verify)(token, config.jwt.pubKey, { algorithm: config.jwt.algorithm })
+    .then(decoded => res.status(200).send(decoded))
+    .catch((err) => {
+      if (err instanceof jwt.TokenExpiredError) {
+        return res.status(401).send({ message: 'Token expired', code: config.errorCodes.expiredToken });
+      }
+
+      if (err instanceof jwt.JsonWebTokenError) {
+        return res.status(401).send({ message: 'Invalid token', code: config.errorCodes.invalidToken });
+      }
+
+      next(err);
+    });
+});
+
+// error handler
+app.use((err, req, res, next) => {
+  if (!err) return next();
+
+  console.error(err.stack);
+  return res.status(500).send({ message: 'Internal Server Error' });
+});
 
 export default app;

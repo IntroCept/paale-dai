@@ -1,15 +1,15 @@
-
-
 import fs from 'fs';
 
-let jwtKey;
-if (process.env.JWT_PRIVATE_KEY_FILE) {
-  jwtKey = fs.readFileSync(process.env.JWT_PRIVATE_KEY_FILE);
-} else {
-  jwtKey = process.env.JWT_PRIVATE_KEY ? Buffer.from(process.env.JWT_PRIVATE_KEY) : 'pale-dai';
-}
+const readKey = (fileConst, keyConst) => {
+  if (process.env[fileConst]) {
+    return fs.readFileSync(process.env[fileConst]);
+  }
 
-export default {
+  return process.env[keyConst] ? Buffer.from(process.env[keyConst]) : 'pale-dai';
+};
+
+// export immutable config object
+export default Object.freeze({
   env: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 3000,
   host: process.env.HOST || '0.0.0.0',
@@ -22,7 +22,13 @@ export default {
     callback: '/google-callback',
   },
   jwt: {
-    key: jwtKey,
+    algorithm: 'RS256',
+    key: readKey('JWT_PRIVATE_KEY_FILE', 'JWT_PRIVATE_KEY'),
+    pubKey: readKey('JWT_PUBLIC_KEY_FILE', 'JWT_PUBLIC_KEY'),
     expiresIn: process.env.TOKEN_EXPIRY || 3600, // 1 hour by default
   },
-};
+  errorCodes: {
+    expiredToken: 1001,
+    invalidToken: 1002,
+  },
+});
