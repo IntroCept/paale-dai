@@ -16,6 +16,7 @@ docker rm --force node_application || true # ingore exit code if no container ex
 docker run --env GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID \
     --env GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET \
     --env JWT_PRIVATE_KEY="$JWT_PRIVATE_KEY" \
+    --env JWT_PUBLIC_KEY="$JWT_PUBLIC_KEY" \
     -d -p 80:80 --name=node_application --restart=always $CONTAINER_RELEASE_IMAGE
 
 #check running containers and verify paale-dai's node_application is running
