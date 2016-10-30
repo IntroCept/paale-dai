@@ -35,3 +35,20 @@ openssl rsa -in data/jwt-private.key -pubout > data/jwt.pub
 * copy .env.sample to .env and edit the google client credentials.
 * Run `docker-compose up -d`
 * Distribute data/jwt.pub to the services that requires integration with pale-dai for authentication
+
+## Running tests
+Without coverage:
+```
+ docker-compose exec application npm run test
+```
+ 
+ With coverage:
+ 
+ ```
+  docker-compose exec application npm run coverage
+ ```
+ 
+ ## Lint
+```
+ docker-compose exec application npm run lint
+```

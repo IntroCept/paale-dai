@@ -4,8 +4,10 @@ const should = require('should'),
   request = require('supertest'),
   denodify = require('denodeify'),
   appendQuery = require('append-query'),
+  _ = require('lodash'),
   path = require('path'),
   config = require(path.resolve('./dist/config')).default,
+  jwtModule = require('jsonwebtoken'),
   proxyquire =  require('proxyquire').noCallThru();
 
 const endRequest = function(req) {
@@ -120,20 +122,123 @@ describe('Paale dai server tests', function () {
     });
 
     it('should redirect to original requesting service', function () {
+      var response = {
+        domain: 'introcept.co',
+        id: '98oiv83434',
+        displayName: 'Foo Bar',
+        name: {familyName: 'Bar', givenName: 'Foo'},
+        emails: [{value: 'foo.bar@introcept.co'}],
+        image: {url: 'http://o23o2i4.com'},
+      };
+
       people.get = function (opts, callback) {
-        return callback(null, {
-          domain: 'introcept.co',
-          emails: [{value: 'ujjwal.ojha@introcept.co'}]
-        });
+        return callback(null, response);
       };
 
       jwt.sign = function(data, key, opts, callback) {
+        data.id.should.be.exactly(response.id);
+        data.displayName.should.be.exactly(response.displayName);
+        data.email.should.be.exactly('foo.bar@introcept.co');
         callback(null, token);
       };
 
       var req = agent.get(appendQuery(config.google.callback, 'code=' + code + '&state=' + state))
         .expect(302);
       return endRequest(req);
+    });
+  });
+
+  describe('Profile API tests', function() {
+    let app,
+      agent,
+      jwt = {JsonWebTokenError: jwtModule.JsonWebTokenError, TokenExpiredError: jwtModule.TokenExpiredError};
+    const token = 'o35234-o2345';
+    before(function () {
+      app = proxyquire(path.resolve('./dist/app'), {
+        'jsonwebtoken': jwt
+      }).default;
+      agent = request.agent(app);
+    });
+
+    it('should return unauthenticated when Authorization header does not exists', function() {
+      var req = agent.get('/me')
+        .expect(401);
+
+      return endRequest(req);
+    });
+
+    it('should return 400 for incorrect Authorization header format', function() {
+      var req = agent.get('/me')
+        .set('Authorization', 'Bearer afdasdf asdfsdf')
+        .expect(400);
+
+      return endRequest(req);
+    });
+
+    it('should return decoded data for correct token', function () {
+      const data = {displayName: 'dfsdfk', email: 'oweirwoeri@adfaf.com'};
+      jwt.verify = function(sourceToken, key, opts, callback) {
+        sourceToken.should.be.exactly(token);
+        callback(null, data);
+      };
+
+      var req = agent.get('/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      return endRequest(req)
+        .then(function (response) {
+          response.body.email.should.be.exactly(data.email);
+          response.body.displayName.should.be.exactly(data.displayName);
+        });
+    });
+
+    it('should return expired token response for expired token', function () {
+      jwt.verify = function(sourceToken, key, opts, callback) {
+        sourceToken.should.be.exactly(token);
+        callback(new jwt.TokenExpiredError);
+      };
+
+      var req = agent.get('/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(401);
+
+      return endRequest(req)
+        .then(function (response) {
+          response.body.code.should.be.exactly(config.errorCodes.expiredToken);
+        });
+    });
+
+
+    it('should return invalid token response for invalid token', function () {
+      jwt.verify = function(sourceToken, key, opts, callback) {
+        sourceToken.should.be.exactly(token);
+        callback(new jwt.JsonWebTokenError);
+      };
+
+      var req = agent.get('/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(401);
+
+      return endRequest(req)
+        .then(function (response) {
+          response.body.code.should.be.exactly(config.errorCodes.invalidToken);
+        });
+    });
+
+    it('should return 500 incontext of unknown error', function () {
+      jwt.verify = function(sourceToken, key, opts, callback) {
+        sourceToken.should.be.exactly(token);
+        callback(new Error('Crap error'));
+      };
+
+      var req = agent.get('/me')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(500);
+
+      return endRequest(req).then(function (response) {
+        response.status.should.be.exactly(500);
+      });
     });
   });
 });
