@@ -19,5 +19,8 @@ docker run --env GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID \
     --env JWT_PUBLIC_KEY="$JWT_PUBLIC_KEY" \
     -d -p 80:80 --name=node_application --restart=always $CONTAINER_RELEASE_IMAGE
 
-#check running containers and verify paale-dai's node_application is running
+#check running containers
 docker ps
+
+# health check; this will fail if application is not running
+curl -sSf http://auth.introcept.co/health-check

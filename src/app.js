@@ -58,7 +58,7 @@ app.get(config.google.callback, [
     next();
   },
   validateService,
-  (req, res, next) => {
+  async (req, res) => {
     // just a simple check
     // won't happen in real scenario
     if (!req.query.code) {
@@ -71,33 +71,27 @@ app.get(config.google.callback, [
       `${req.protocol}://${req.hostname}:${config.port}${config.google.callback}`
     );
 
-    denodeify(oauth2Client.getToken).bind(oauth2Client)(req.query.code)
-      .then((tokens) => {
-        oauth2Client.setCredentials(tokens);
-        return denodeify(plus.people.get)({ userId: 'me', auth: oauth2Client });
-      }).then((response) => {
-        if (response.domain !== 'introcept.co') {
-          res.status(403).send('You must have an email address from introcept.co');
-          return false;
-        }
+    const tokens = await denodeify(oauth2Client.getToken).bind(oauth2Client)(req.query.code);
+    oauth2Client.setCredentials(tokens);
+    const response = await denodeify(plus.people.get)({ userId: 'me', auth: oauth2Client });
 
-        return denodeify(jwt.sign)({
-          id: response.id,
-          displayName: response.displayName,
-          name: response.name,
-          email: response.emails[0].value,
-          image: response.image.url,
-        }, config.jwt.key, { algorithm: config.jwt.algorithm, expiresIn: config.jwt.expiresIn });
-      }).then((token) => {
-        if (!token) return;
+    if (response.domain !== 'introcept.co') {
+      return res.status(403).send('You must have an email address from introcept.co');
+    }
 
-        return res.redirect(appendQuery(req.query.service, `token=${token}`));
-      })
-      .catch(next);
+    const token = await denodeify(jwt.sign)({
+      id: response.id,
+      displayName: response.displayName,
+      name: response.name,
+      email: response.emails[0].value,
+      image: response.image.url,
+    }, config.jwt.key, { algorithm: config.jwt.algorithm, expiresIn: config.jwt.expiresIn });
+
+    res.redirect(appendQuery(req.query.service, `token=${token}`));
   },
 ]);
 
-app.get('/me', (req, res, next) => {
+app.get('/me', async (req, res, next) => {
   let parts = req.get('Authorization');
   if (!parts) {
     return res.status(401).send({ message: 'Unauthenticated' });
@@ -111,19 +105,28 @@ app.get('/me', (req, res, next) => {
 
   const token = parts[1];
 
-  return denodeify(jwt.verify)(token, config.jwt.pubKey, { algorithm: config.jwt.algorithm })
-    .then(decoded => res.status(200).send(decoded))
-    .catch((err) => {
-      if (err instanceof jwt.TokenExpiredError) {
-        return res.status(401).send({ message: 'Token expired', code: config.errorCodes.expiredToken });
-      }
+  try {
+    const decoded = await denodeify(jwt.verify)(
+      token,
+      config.jwt.pubKey,
+      { algorithm: config.jwt.algorithm }
+    );
+    res.status(200).send(decoded);
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      return res.status(401).send({ message: 'Token expired', code: config.errorCodes.expiredToken });
+    }
 
-      if (err instanceof jwt.JsonWebTokenError) {
-        return res.status(401).send({ message: 'Invalid token', code: config.errorCodes.invalidToken });
-      }
+    if (err instanceof jwt.JsonWebTokenError) {
+      return res.status(401).send({ message: 'Invalid token', code: config.errorCodes.invalidToken });
+    }
 
-      next(err);
-    });
+    next(err);
+  }
+});
+
+app.get('/health-check', (req, res) => {
+  res.status(200).send({ message: 'All is well!' });
 });
 
 // error handler

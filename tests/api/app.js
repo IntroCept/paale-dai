@@ -241,4 +241,17 @@ describe('Paale dai server tests', function () {
       });
     });
   });
+
+  it('should return 200 by the health check test', function () {
+    const app = require(path.resolve('./dist/app')).default,
+      agent = request.agent(app);
+
+    const req = agent.get('/health-check')
+      .expect(200);
+
+    return endRequest(req)
+      .then(function (res) {
+        res.body.message.should.be.exactly('All is well!');
+      });
+  });
 });
