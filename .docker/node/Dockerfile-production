@@ -6,8 +6,7 @@ WORKDIR /var/www/paale-dai
 RUN chown -R root:root /var/www/paale-dai\
     && npm install -g yarn\
     && yarn\
-    && npm run build \
-    && yarn install --production
+    && npm run build
 
 EXPOSE 80
 
