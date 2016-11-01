@@ -22,5 +22,8 @@ docker run --env GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID \
 #check running containers
 docker ps
 
+#some time for the application to start before the health-check
+sleep 2
+
 # health check; this will fail if application is not running
 curl -sSf http://auth.introcept.co/health-check
