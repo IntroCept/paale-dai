@@ -8,7 +8,7 @@ const should = require('should'),
   path = require('path'),
   jwtModule = require('jsonwebtoken'),
   proxyquire =  require('proxyquire').noCallThru(),
-  paale = require('../../dist/index').default;
+  paale = require('../../src/index');
 
 const endRequest = function(req) {
   return new Promise(function(resolve, reject) {
@@ -23,14 +23,13 @@ describe('Paale dai server tests', function () {
   describe('Pre Google Redirection', function () {
     var app, agent;
     before(function () {
-      const handler = require(path.resolve('./dist/handler/google-oauth2')).default;
-      const jwtStorage = require(path.resolve('./dist/storage/jwt')).default;
+      const handler = require(path.resolve('./src/handler/google-oauth2'));
+      const jwtStorage = require(path.resolve('./src/storage/jwt'));
       app = paale(
         handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
         jwtStorage(),
         {
           serviceValidator:(service) => !_.startsWith(service, 'http://danger')
-          //serviceValidator:(service) => service !== 'http://google.com'
         }
       );
       agent = request.agent(app);
@@ -93,13 +92,13 @@ describe('Paale dai server tests', function () {
         };
       };
 
-      const handler = proxyquire(path.resolve('./dist/handler/google-oauth2'), {
+      const handler = proxyquire(path.resolve('./src/handler/google-oauth2'), {
         'googleapis': google,
         './state-encoder': stateEncoder,
-      }).default;
-      const jwtStorage = proxyquire(path.resolve('./dist/storage/jwt'), {
+      });
+      const jwtStorage = proxyquire(path.resolve('./src/storage/jwt'), {
         'jsonwebtoken': jwt
-      }).default;
+      });
       app = paale(
         handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
         jwtStorage(),
@@ -174,10 +173,10 @@ describe('Paale dai server tests', function () {
       jwt = {JsonWebTokenError: jwtModule.JsonWebTokenError, TokenExpiredError: jwtModule.TokenExpiredError};
     const token = 'o35234-o2345';
     before(function () {
-      const handler = require(path.resolve('./dist/handler/google-oauth2')).default;
-      const jwtStorage = proxyquire(path.resolve('./dist/storage/jwt'), {
+      const handler = require(path.resolve('./src/handler/google-oauth2'));
+      const jwtStorage = proxyquire(path.resolve('./src/storage/jwt'), {
         'jsonwebtoken': jwt
-      }).default;
+      });
       app = paale(
         handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
         jwtStorage(),
@@ -270,17 +269,4 @@ describe('Paale dai server tests', function () {
       });
     });
   });
-
-  // it('should return 200 by the health check test', function () {
-  //   const app = require(path.resolve('./dist/app')).default,
-  //     agent = request.agent(app);
-  //
-  //   const req = agent.get('/health-check')
-  //     .expect(200);
-  //
-  //   return endRequest(req)
-  //     .then(function (res) {
-  //       res.body.message.should.be.exactly('All is well!');
-  //     });
-  // });
 });

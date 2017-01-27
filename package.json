@@ -3,11 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "build": "babel src -d dist",
-    "serve": "env $(cat .env | grep -v ^# | xargs) node dist/server.js",
-    "start": "npm run build && npm run serve",
-    "nodemon": "nodemon --exec 'npm start' --watch src",
-    "test": "npm run build && node_modules/.bin/mocha tests/unit tests/api",
+    "test": "mocha tests/unit tests/api",
     "lint": "eslint src/",
     "test-ci": "npm run lint && npm run build && istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec tests/unit tests/api",
     "coverage": "npm run build && istanbul cover node_modules/mocha/bin/_mocha --  --reporter dot tests/unit tests/api"
@@ -29,19 +25,15 @@
     "express": "^4.14.0",
     "googleapis": "^14.0.0",
     "jsonwebtoken": "^7.1.9",
-    "lodash": "^4.16.4",
     "supertest": "^2.0.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.16.0",
-    "babel-plugin-transform-async-to-generator": "^6.16.0",
-    "babel-preset-node6": "^11.0.0",
+    "lodash": "^4.16.4",
     "eslint": "^3.8.1",
     "eslint-config-airbnb-base": "^9.0.0",
     "eslint-plugin-import": "^2.0.1",
     "istanbul": "^0.4.5",
     "mocha": "^3.1.2",
-    "nodemon": "^1.11.0",
     "proxyquire": "^1.7.10",
     "should": "^11.1.1"
   }

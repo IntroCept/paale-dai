@@ -1,11 +1,9 @@
+const base64url = require('base64-url');
 
-
-import base64url from 'base64-url';
-
-export function encode(service) {
+exports.encode = function(service) {
   return base64url.encode(JSON.stringify({ service }));
-}
+};
 
-export function decode(state) {
+exports.decode = function(state) {
   return JSON.parse(base64url.decode(state)).service;
-}
+};

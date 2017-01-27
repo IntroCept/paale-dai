@@ -1,7 +1,7 @@
-import express from 'express';
-import appendQuery from 'append-query';
+const express = require('express');
+const appendQuery = require('append-query');
 
-export default function (
+module.exports = function (
   handler,
   tokenStorage,
   {
@@ -65,4 +65,4 @@ export default function (
   ]);
 
   return app;
-}
+};

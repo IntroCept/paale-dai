@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
+const jwt = require('jsonwebtoken');
 
-export default function (
+module.exports = function (
   {
     key = 'paale-key',
     pubKey = 'paale-key',

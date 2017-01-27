@@ -1,11 +1,11 @@
-import google from 'googleapis';
-import denodeify from 'denodeify';
-import * as stateEncoder from './state-encoder';
+const google = require('googleapis');
+const denodeify = require('denodeify');
+const stateEncoder = require('./state-encoder');
 
 const OAuth2 = google.auth.OAuth2;
 const plus = google.plus('v1');
 
-export default function(
+module.exports = function(
   clientId,
   clientSecret,
   scopes = ['https://www.googleapis.com/auth/plus.me']
