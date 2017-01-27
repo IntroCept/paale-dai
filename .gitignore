@@ -1,7 +1,5 @@
 node_modules
 .idea
-/dist
-/.env
 /data
 npm-debug.log
 /coverage

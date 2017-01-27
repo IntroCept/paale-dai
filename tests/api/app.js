@@ -6,9 +6,9 @@ const should = require('should'),
   appendQuery = require('append-query'),
   _ = require('lodash'),
   path = require('path'),
-  config = require(path.resolve('./dist/config')).default,
   jwtModule = require('jsonwebtoken'),
-  proxyquire =  require('proxyquire').noCallThru();
+  proxyquire =  require('proxyquire').noCallThru(),
+  paale = require('../../src/index');
 
 const endRequest = function(req) {
   return new Promise(function(resolve, reject) {
@@ -23,7 +23,15 @@ describe('Paale dai server tests', function () {
   describe('Pre Google Redirection', function () {
     var app, agent;
     before(function () {
-      app = require(path.resolve('./dist/app')).default;
+      const handler = require(path.resolve('./src/handler/google-oauth2'));
+      const jwtStorage = require(path.resolve('./src/storage/jwt'));
+      app = paale(
+        handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
+        jwtStorage(),
+        {
+          serviceValidator:(service) => !_.startsWith(service, 'http://danger')
+        }
+      );
       agent = request.agent(app);
     });
 
@@ -34,7 +42,7 @@ describe('Paale dai server tests', function () {
     });
 
     it('should validate redirecting service', function () {
-      var req = agent.get('/?service=http://google.com')
+      var req = agent.get('/?service=http://danger.google.com')
         .expect(403);
       return endRequest(req);
     });
@@ -53,6 +61,7 @@ describe('Paale dai server tests', function () {
       google = {},
       service = 'http://senani.introcept.co',
       jwt = {},
+      callbackPath = '/auth',
       fraudService = 'http://danger.example.com';
 
     const code = '49v29348', token = 'alhasdf', tokens = {};
@@ -83,43 +92,53 @@ describe('Paale dai server tests', function () {
         };
       };
 
-      app = proxyquire(path.resolve('./dist/app'), {
-        './state-encoder': stateEncoder,
+      const handler = proxyquire(path.resolve('./src/handler/google-oauth2'), {
         'googleapis': google,
+        './state-encoder': stateEncoder,
+      });
+      const jwtStorage = proxyquire(path.resolve('./src/storage/jwt'), {
         'jsonwebtoken': jwt
-      }).default;
+      });
+      app = paale(
+        handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
+        jwtStorage(),
+        {
+          callbackPath,
+          serviceValidator:(service) => !_.startsWith(service, 'http://danger')
+        }
+      );
       agent = request.agent(app);
     });
 
     it('should check if state is present', function () {
-      var req = agent.get(config.google.callback)
-        .expect(400, 'State absent');
+      var req = agent.get(appendQuery(callbackPath, `code=${code}`))
+        .expect(403, 'Invalid service');
       return endRequest(req);
     });
 
     it('should check if authorization token is present', function () {
-      var req = agent.get(appendQuery(config.google.callback, 'state=' + state))
+      var req = agent.get(appendQuery(callbackPath, 'state=' + state))
         .expect(400, 'Authorization code is absent');
       return endRequest(req);
     });
 
     it('should check if redirecting service is valid', function () {
-      var req = agent.get(appendQuery(config.google.callback, 'state=v35345'))
+      var req = agent.get(appendQuery(callbackPath, 'state=v35345'))
         .expect(403, 'Invalid service');
       return endRequest(req);
     });
 
-    it('should check if email belongs to introcept.co', function () {
-      people.get = function (opts, callback) {
-        return callback(null, {
-          domain: 'gmail.com'
-        });
-      };
-
-      var req = agent.get(appendQuery(config.google.callback, 'code=' + code + '&state=' + state))
-        .expect(403, 'You must have an email address from introcept.co');
-      return endRequest(req);
-    });
+    // it('should check if email belongs to introcept.co', function () {
+    //   people.get = function (opts, callback) {
+    //     return callback(null, {
+    //       domain: 'gmail.com'
+    //     });
+    //   };
+    //
+    //   var req = agent.get(appendQuery(callbackPath, 'code=' + code + '&state=' + state))
+    //     .expect(403, 'You must have an email address from introcept.co');
+    //   return endRequest(req);
+    // });
 
     it('should redirect to original requesting service', function () {
       var response = {
@@ -138,11 +157,11 @@ describe('Paale dai server tests', function () {
       jwt.sign = function(data, key, opts, callback) {
         data.id.should.be.exactly(response.id);
         data.displayName.should.be.exactly(response.displayName);
-        data.email.should.be.exactly('foo.bar@introcept.co');
+        data.emails[0].value.should.be.exactly('foo.bar@introcept.co');
         callback(null, token);
       };
 
-      var req = agent.get(appendQuery(config.google.callback, 'code=' + code + '&state=' + state))
+      var req = agent.get(appendQuery(callbackPath, `code=${code}&state=${state}`))
         .expect(302);
       return endRequest(req);
     });
@@ -154,9 +173,18 @@ describe('Paale dai server tests', function () {
       jwt = {JsonWebTokenError: jwtModule.JsonWebTokenError, TokenExpiredError: jwtModule.TokenExpiredError};
     const token = 'o35234-o2345';
     before(function () {
-      app = proxyquire(path.resolve('./dist/app'), {
+      const handler = require(path.resolve('./src/handler/google-oauth2'));
+      const jwtStorage = proxyquire(path.resolve('./src/storage/jwt'), {
         'jsonwebtoken': jwt
-      }).default;
+      });
+      app = paale(
+        handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
+        jwtStorage(),
+        {
+          identityPath: '/me'
+        }
+      );
+
       agent = request.agent(app);
     });
 
@@ -205,7 +233,7 @@ describe('Paale dai server tests', function () {
 
       return endRequest(req)
         .then(function (response) {
-          response.body.code.should.be.exactly(config.errorCodes.expiredToken);
+          response.body.code.should.be.exactly('expiredToken');
         });
     });
 
@@ -222,7 +250,7 @@ describe('Paale dai server tests', function () {
 
       return endRequest(req)
         .then(function (response) {
-          response.body.code.should.be.exactly(config.errorCodes.invalidToken);
+          response.body.code.should.be.exactly('invalidToken');
         });
     });
 
@@ -240,18 +268,5 @@ describe('Paale dai server tests', function () {
         response.status.should.be.exactly(500);
       });
     });
-  });
-
-  it('should return 200 by the health check test', function () {
-    const app = require(path.resolve('./dist/app')).default,
-      agent = request.agent(app);
-
-    const req = agent.get('/health-check')
-      .expect(200);
-
-    return endRequest(req)
-      .then(function (res) {
-        res.body.message.should.be.exactly('All is well!');
-      });
   });
 });
