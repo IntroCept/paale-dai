@@ -5,8 +5,8 @@
   "scripts": {
     "test": "mocha tests/unit tests/api",
     "lint": "eslint src/",
-    "test-ci": "npm run lint && npm run build && istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec tests/unit tests/api",
-    "coverage": "npm run build && istanbul cover node_modules/mocha/bin/_mocha --  --reporter dot tests/unit tests/api"
+    "test-ci": "npm run lint && istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec tests/unit tests/api",
+    "coverage": "istanbul cover node_modules/mocha/bin/_mocha --  --reporter dot tests/unit tests/api"
   },
   "repository": {
     "type": "git",
