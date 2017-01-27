@@ -9,7 +9,7 @@ describe('State encoder tests', function () {
   const state = '23po23u394';
 
   it('should encode', function () {
-    const stateEncoder = proxyquire(path.resolve('./dist/state-encoder'), {'base64-url': {encode: function (jsonString) {
+    const stateEncoder = proxyquire(path.resolve('./dist/handler/state-encoder'), {'base64-url': {encode: function (jsonString) {
       jsonString.should.be.exactly(JSON.stringify({service: service}));
       return state;
     }}});
@@ -18,7 +18,7 @@ describe('State encoder tests', function () {
   });
 
   it('should decode', function () {
-    const stateEncoder = proxyquire(path.resolve('./dist/state-encoder'), {'base64-url': {decode: function (sourceState) {
+    const stateEncoder = proxyquire(path.resolve('./dist/handler/state-encoder'), {'base64-url': {decode: function (sourceState) {
       sourceState.should.be.exactly(state);
       return JSON.stringify({service: service});
     }}});
