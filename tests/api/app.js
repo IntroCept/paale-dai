@@ -1,61 +1,61 @@
-'use strict';
+const should = require('should');
+const request = require('supertest');
+const appendQuery = require('append-query');
+const _ = require('lodash');
+const path = require('path');
+const jwtModule = require('jsonwebtoken');
+const proxyquire = require('proxyquire').noCallThru();
+const paale = require('../../index');
 
-const should = require('should'),
-  request = require('supertest'),
-  denodify = require('denodeify'),
-  appendQuery = require('append-query'),
-  _ = require('lodash'),
-  path = require('path'),
-  jwtModule = require('jsonwebtoken'),
-  proxyquire =  require('proxyquire').noCallThru(),
-  paale = require('../../src/index');
-
-const endRequest = function(req) {
-  return new Promise(function(resolve, reject) {
-    req.end(function(err, res) {
-      if (err) return reject(err);
-      resolve(res);
-    });
+const endRequest = req => new Promise((resolve, reject) => {
+  req.end((err, res) => {
+   if (err) return reject(err);
+   resolve(res);
   });
-};
+});
 
-describe('Paale dai server tests', function () {
-  describe('Pre Google Redirection', function () {
-    var app, agent;
-    before(function () {
-      const handler = require(path.resolve('./src/handler/google-oauth2'));
-      const jwtStorage = require(path.resolve('./src/storage/jwt'));
+describe('Paale dai server tests', () => {
+  describe('Pre Google Redirection', () => {
+    let app,
+      agent;
+    before(() => {
+      const handler = require(path.resolve('./handler/google-oauth2'));
+      const jwtStorage = require(path.resolve('./storage/jwt'));
       app = paale(
         handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
         jwtStorage(),
         {
-          serviceValidator:(service) => !_.startsWith(service, 'http://danger')
+          serviceValidator: service => !_.startsWith(service, 'http://danger'),
         }
       );
       agent = request.agent(app);
     });
 
-    it('should check if redirecting service is present before initiating authentication', function () {
-      var req = agent.get('/')
+    it('should check if redirecting service is present before initiating authentication', () => {
+      const req = agent.get('/')
         .expect(400);
       return endRequest(req);
     });
 
-    it('should validate redirecting service', function () {
-      var req = agent.get('/?service=http://danger.google.com')
+    it('should validate redirecting service', () => {
+      const req = agent.get('/?service=http://danger.google.com')
         .expect(403);
       return endRequest(req);
     });
 
-    it('should redirect to google oauth2', function () {
-      var req = agent.get('/?service=http://senani.introcept.co')
+    it('should redirect to google oauth2', () => {
+      const req = agent.get('/?service=http://senani.introcept.co')
         .expect(302);
       return endRequest(req);
     });
   });
 
-  describe('Post Google Redirection', function () {
-    var app, agent, stateEncoder, OAuth2, people = {};
+  describe('Post Google Redirection', () => {
+    let app,
+      agent,
+      stateEncoder,
+      OAuth2,
+      people = {};
 
     const state = 'tgije',
       google = {},
@@ -64,15 +64,17 @@ describe('Paale dai server tests', function () {
       callbackPath = '/auth',
       fraudService = 'http://danger.example.com';
 
-    const code = '49v29348', token = 'alhasdf', tokens = {};
+    const code = '49v29348',
+      token = 'alhasdf',
+      tokens = {};
 
-    before(function () {
+    before(() => {
       stateEncoder = {
-        decode: function (sourceState) {
-          if (sourceState === state ) return service;
+        decode(sourceState) {
+          if (sourceState === state) return service;
 
           return fraudService;
-        }
+        },
       };
 
       OAuth2 = function () {};
@@ -84,46 +86,46 @@ describe('Paale dai server tests', function () {
         sourceTokens.should.be.exactly(tokens);
       };
 
-      google.auth = {OAuth2: OAuth2};
+      google.auth = { OAuth2 };
 
       google.plus = function () {
         return {
-          people: people
+          people,
         };
       };
 
-      const handler = proxyquire(path.resolve('./src/handler/google-oauth2'), {
-        'googleapis': google,
+      const handler = proxyquire(path.resolve('./handler/google-oauth2'), {
+        googleapis: google,
         './state-encoder': stateEncoder,
       });
-      const jwtStorage = proxyquire(path.resolve('./src/storage/jwt'), {
-        'jsonwebtoken': jwt
+      const jwtStorage = proxyquire(path.resolve('./storage/jwt'), {
+        jsonwebtoken: jwt,
       });
       app = paale(
         handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
         jwtStorage(),
         {
           callbackPath,
-          serviceValidator:(service) => !_.startsWith(service, 'http://danger')
+          serviceValidator: service => !_.startsWith(service, 'http://danger'),
         }
       );
       agent = request.agent(app);
     });
 
-    it('should check if state is present', function () {
-      var req = agent.get(appendQuery(callbackPath, `code=${code}`))
+    it('should check if state is present', () => {
+      const req = agent.get(appendQuery(callbackPath, `code=${code}`))
         .expect(403, 'Invalid service');
       return endRequest(req);
     });
 
-    it('should check if authorization token is present', function () {
-      var req = agent.get(appendQuery(callbackPath, 'state=' + state))
+    it('should check if authorization token is present', () => {
+      const req = agent.get(appendQuery(callbackPath, `state=${state}`))
         .expect(400, 'Authorization code is absent');
       return endRequest(req);
     });
 
-    it('should check if redirecting service is valid', function () {
-      var req = agent.get(appendQuery(callbackPath, 'state=v35345'))
+    it('should check if redirecting service is valid', () => {
+      const req = agent.get(appendQuery(callbackPath, 'state=v35345'))
         .expect(403, 'Invalid service');
       return endRequest(req);
     });
@@ -140,131 +142,131 @@ describe('Paale dai server tests', function () {
     //   return endRequest(req);
     // });
 
-    it('should redirect to original requesting service', function () {
-      var response = {
+    it('should redirect to original requesting service', () => {
+      const response = {
         domain: 'introcept.co',
         id: '98oiv83434',
         displayName: 'Foo Bar',
-        name: {familyName: 'Bar', givenName: 'Foo'},
-        emails: [{value: 'foo.bar@introcept.co'}],
-        image: {url: 'http://o23o2i4.com'},
+        name: { familyName: 'Bar', givenName: 'Foo' },
+        emails: [{ value: 'foo.bar@introcept.co' }],
+        image: { url: 'http://o23o2i4.com' },
       };
 
       people.get = function (opts, callback) {
         return callback(null, response);
       };
 
-      jwt.sign = function(data, key, opts, callback) {
+      jwt.sign = function (data, key, opts, callback) {
         data.id.should.be.exactly(response.id);
         data.displayName.should.be.exactly(response.displayName);
         data.emails[0].value.should.be.exactly('foo.bar@introcept.co');
         callback(null, token);
       };
 
-      var req = agent.get(appendQuery(callbackPath, `code=${code}&state=${state}`))
+      const req = agent.get(appendQuery(callbackPath, `code=${code}&state=${state}`))
         .expect(302);
       return endRequest(req);
     });
   });
 
-  describe('Profile API tests', function() {
+  describe('Profile API tests', () => {
     let app,
       agent,
-      jwt = {JsonWebTokenError: jwtModule.JsonWebTokenError, TokenExpiredError: jwtModule.TokenExpiredError};
+      jwt = { JsonWebTokenError: jwtModule.JsonWebTokenError, TokenExpiredError: jwtModule.TokenExpiredError };
     const token = 'o35234-o2345';
-    before(function () {
-      const handler = require(path.resolve('./src/handler/google-oauth2'));
-      const jwtStorage = proxyquire(path.resolve('./src/storage/jwt'), {
-        'jsonwebtoken': jwt
+    before(() => {
+      const handler = require(path.resolve('./handler/google-oauth2'));
+      const jwtStorage = proxyquire(path.resolve('./storage/jwt'), {
+        jsonwebtoken: jwt,
       });
       app = paale(
         handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
         jwtStorage(),
         {
-          identityPath: '/me'
+          identityPath: '/me',
         }
       );
 
       agent = request.agent(app);
     });
 
-    it('should return unauthenticated when Authorization header does not exists', function() {
-      var req = agent.get('/me')
+    it('should return unauthenticated when Authorization header does not exists', () => {
+      const req = agent.get('/me')
         .expect(401);
 
       return endRequest(req);
     });
 
-    it('should return 400 for incorrect Authorization header format', function() {
-      var req = agent.get('/me')
+    it('should return 400 for incorrect Authorization header format', () => {
+      const req = agent.get('/me')
         .set('Authorization', 'Bearer afdasdf asdfsdf')
         .expect(400);
 
       return endRequest(req);
     });
 
-    it('should return decoded data for correct token', function () {
-      const data = {displayName: 'dfsdfk', email: 'oweirwoeri@adfaf.com'};
-      jwt.verify = function(sourceToken, key, opts, callback) {
+    it('should return decoded data for correct token', () => {
+      const data = { displayName: 'dfsdfk', email: 'oweirwoeri@adfaf.com' };
+      jwt.verify = function (sourceToken, key, opts, callback) {
         sourceToken.should.be.exactly(token);
         callback(null, data);
       };
 
-      var req = agent.get('/me')
+      const req = agent.get('/me')
         .set('Authorization', `Bearer ${token}`)
         .expect(200);
 
       return endRequest(req)
-        .then(function (response) {
+        .then((response) => {
           response.body.email.should.be.exactly(data.email);
           response.body.displayName.should.be.exactly(data.displayName);
         });
     });
 
-    it('should return expired token response for expired token', function () {
-      jwt.verify = function(sourceToken, key, opts, callback) {
+    it('should return expired token response for expired token', () => {
+      jwt.verify = function (sourceToken, key, opts, callback) {
         sourceToken.should.be.exactly(token);
-        callback(new jwt.TokenExpiredError);
+        callback(new jwt.TokenExpiredError());
       };
 
-      var req = agent.get('/me')
+      const req = agent.get('/me')
         .set('Authorization', `Bearer ${token}`)
         .expect(401);
 
       return endRequest(req)
-        .then(function (response) {
+        .then((response) => {
           response.body.code.should.be.exactly('expiredToken');
         });
     });
 
 
-    it('should return invalid token response for invalid token', function () {
-      jwt.verify = function(sourceToken, key, opts, callback) {
+    it('should return invalid token response for invalid token', () => {
+      jwt.verify = function (sourceToken, key, opts, callback) {
         sourceToken.should.be.exactly(token);
-        callback(new jwt.JsonWebTokenError);
+        callback(new jwt.JsonWebTokenError());
       };
 
-      var req = agent.get('/me')
+      const req = agent.get('/me')
         .set('Authorization', `Bearer ${token}`)
         .expect(401);
 
       return endRequest(req)
-        .then(function (response) {
+        .then((response) => {
           response.body.code.should.be.exactly('invalidToken');
         });
     });
 
-    it('should return 500 incontext of unknown error', function () {
-      jwt.verify = function(sourceToken, key, opts, callback) {
+    it('should return 500 incontext of unknown error', () => {
+      jwt.verify = function (sourceToken, key, opts, callback) {
         sourceToken.should.be.exactly(token);
         callback(new Error('Crap error'));
       };
 
-      var req = agent.get('/me')
+      const req = agent.get('/me')
         .set('Authorization', `Bearer ${token}`)
         .expect(500);
 
-      return endRequest(req).then(function (response) {
+      return endRequest(req).then((response) => {
         response.status.should.be.exactly(500);
       });
     });
