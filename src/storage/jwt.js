@@ -1,16 +1,16 @@
 const jwt = require('jsonwebtoken');
 
-module.exports = function (
+module.exports = (
   {
     key = 'paale-key',
     pubKey = 'paale-key',
     algorithm = 'RS256',
     expiresIn = 3600,
   } = {}
-) {
-  return {
-    store(req, res, next) {
-      jwt.sign(
+) =>
+   ({
+     store(req, res, next) {
+       jwt.sign(
         req.paale_user,
         key,
         { algorithm, expiresIn },
@@ -22,10 +22,10 @@ module.exports = function (
           next();
         }
       );
-    },
+     },
 
-    parse(req, res, next) {
-      jwt.verify(
+     parse(req, res, next) {
+       jwt.verify(
         req.paale_token,
         pubKey,
         { algorithm },
@@ -47,6 +47,6 @@ module.exports = function (
           next();
         }
       );
-    }
-  };
-};
+     },
+   })
+;

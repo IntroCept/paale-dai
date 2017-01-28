@@ -1,7 +1,7 @@
 const express = require('express');
 const appendQuery = require('append-query');
 
-module.exports = function (
+module.exports = (
   handler,
   tokenStorage,
   {
@@ -11,7 +11,7 @@ module.exports = function (
     callbackRouteMethod = 'get',
     serviceValidator = () => true,
   } = {}
-) {
+) => {
   const app = express();
 
   app.get(landingPath, [
@@ -40,7 +40,7 @@ module.exports = function (
     },
     handler.authentication,
     tokenStorage.store,
-    (req, res) => res.redirect(appendQuery(req.paale_service, `token=${req.paale_token}`))
+    (req, res) => res.redirect(appendQuery(req.paale_service, `token=${req.paale_token}`)),
   ]);
 
   app.get(identityPath, [
@@ -61,7 +61,7 @@ module.exports = function (
       next();
     },
     tokenStorage.parse,
-    (req, res) => res.status(200).send(req.paale_user)
+    (req, res) => res.status(200).send(req.paale_user),
   ]);
 
   return app;
