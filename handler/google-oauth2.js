@@ -49,7 +49,6 @@ module.exports = (
         .catch(next);
      },
 
-    /* eslint-disable class-methods-use-this */
      parseService(req) {
        if (!req.query.state) {
          return req.query.service;
