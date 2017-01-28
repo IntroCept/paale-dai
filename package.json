@@ -1,23 +1,23 @@
 {
-  "name": "pale-dai",
+  "name": "paale-dai",
   "version": "1.0.0",
   "description": "",
   "scripts": {
     "test": "mocha tests/unit tests/api",
-    "lint": "eslint src/",
+    "lint": "eslint ./",
     "test-ci": "npm run lint && istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec tests/unit tests/api",
     "coverage": "istanbul cover node_modules/mocha/bin/_mocha --  --reporter dot tests/unit tests/api"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ojhaujjwal/pale-dai.git"
+    "url": "git+https://github.com/IntroCept/paale-dai.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/ojhaujjwal/pale-dai/issues"
+    "url": "https://github.com/IntroCept/paale-dai/issues"
   },
-  "homepage": "https://github.com/ojhaujjwal/pale-dai#readme",
+  "homepage": "https://github.com/IntroCept/paale-dai",
   "dependencies": {
     "append-query": "^2.0.0",
     "base64-url": "^1.3.2",
