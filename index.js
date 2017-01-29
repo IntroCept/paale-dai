@@ -38,7 +38,7 @@ module.exports = (
       req.paale_service = service;
       next();
     },
-    handler.authentication,
+    handler.authentication(callbackPath),
     tokenStorage.store,
     (req, res) => res.redirect(appendQuery(req.paale_service, `token=${req.paale_token}`)),
   ]);
