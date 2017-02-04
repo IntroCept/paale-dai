@@ -4,6 +4,8 @@ const appendQuery = require('append-query');
 const _ = require('lodash');
 const path = require('path');
 const jwtModule = require('jsonwebtoken');
+const Cookies = require('cookies');
+const express = require('express');
 const proxyquire = require('proxyquire').noCallThru();
 const paale = require('../../index');
 
@@ -51,13 +53,13 @@ describe('Paale dai server tests', () => {
   });
 
   describe('Post Google Redirection', () => {
-    let app,
-      agent,
+    let agent,
       stateEncoder,
       OAuth2,
       people = {};
 
-    const state = 'tgije',
+    const app = express(),
+      state = 'tgije',
       google = {},
       service = 'http://senani.introcept.co',
       jwt = {},
@@ -101,14 +103,20 @@ describe('Paale dai server tests', () => {
       const jwtStorage = proxyquire(path.resolve('./storage/jwt'), {
         jsonwebtoken: jwt,
       });
-      app = paale(
+
+      app.use(Cookies.express());
+
+      paale(
         handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
         jwtStorage(),
         {
           callbackPath,
           serviceValidator: service => !_.startsWith(service, 'http://danger'),
+          useCookie: true,
+          app
         }
       );
+
       agent = request.agent(app);
     });
 
@@ -129,18 +137,6 @@ describe('Paale dai server tests', () => {
         .expect(403, 'Invalid service');
       return endRequest(req);
     });
-
-    // it('should check if email belongs to introcept.co', function () {
-    //   people.get = function (opts, callback) {
-    //     return callback(null, {
-    //       domain: 'gmail.com'
-    //     });
-    //   };
-    //
-    //   var req = agent.get(appendQuery(callbackPath, 'code=' + code + '&state=' + state))
-    //     .expect(403, 'You must have an email address from introcept.co');
-    //   return endRequest(req);
-    // });
 
     it('should redirect to original requesting service', () => {
       const response = {
@@ -165,25 +161,42 @@ describe('Paale dai server tests', () => {
 
       const req = agent.get(appendQuery(callbackPath, `code=${code}&state=${state}`))
         .expect(302);
-      return endRequest(req);
+      return endRequest(req)
+        .then((res) => {
+          res.header.location.should.be.exactly(appendQuery(service, `token=${token}`));
+        });
+    });
+
+    it('should retrieve from cookies the next time and directly redirect to the redirecting service', () => {
+      const req = agent.get('/?service=http://senani.introcept.co')
+        .expect(302);
+      return endRequest(req)
+        .then((res) => {
+          res.header.location.should.be.exactly(appendQuery(service, `token=${token}`));
+        });
     });
   });
 
   describe('Profile API tests', () => {
-    let app,
-      agent,
+    let agent,
       jwt = { JsonWebTokenError: jwtModule.JsonWebTokenError, TokenExpiredError: jwtModule.TokenExpiredError };
-    const token = 'o35234-o2345';
+    const token = 'o35234-o2345',
+      app = express();
     before(() => {
       const handler = require(path.resolve('./handler/google-oauth2'));
       const jwtStorage = proxyquire(path.resolve('./storage/jwt'), {
         jsonwebtoken: jwt,
       });
-      app = paale(
+
+      app.use(Cookies.express());
+
+      paale(
         handler('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
         jwtStorage(),
         {
           identityPath: '/me',
+          useCookie: true,
+          app
         }
       );
 
@@ -223,20 +236,18 @@ describe('Paale dai server tests', () => {
         });
     });
 
-    it('should return expired token response for expired token', () => {
+    it('should use cookie to retrieve token and return expired token response for expired token', () => {
       jwt.verify = function (sourceToken, key, opts, callback) {
         sourceToken.should.be.exactly(token);
         callback(new jwt.TokenExpiredError());
       };
 
       const req = agent.get('/me')
-        .set('Authorization', `Bearer ${token}`)
+        .set('Cookie', `paale_token=${token}`)
         .expect(401);
 
       return endRequest(req)
-        .then((response) => {
-          response.body.code.should.be.exactly('expiredToken');
-        });
+        .then((response) => response.body.code.should.be.exactly('expiredToken'));
     });
 
 

@@ -10,10 +10,11 @@ module.exports = (
     callbackPath = '/authentication',
     callbackRouteMethod = 'get',
     serviceValidator = () => true,
+    useCookie = false,
+    cookieOptions = {},
+    app = express(),
   } = {}
 ) => {
-  const app = express();
-
   app.get(landingPath, [
     (req, res, next) => {
       const service = handler.parseService(req);
@@ -23,6 +24,14 @@ module.exports = (
       if (!serviceValidator(service)) {
         return res.status(403).send('Invalid service');
       }
+
+      if (useCookie) {
+        const token = req.cookies.get('paale_token', cookieOptions);
+        if (token) {
+          return res.redirect(appendQuery(service, `token=${token}`));
+        }
+      }
+
       next();
     },
     handler.landing(callbackPath),
@@ -40,11 +49,23 @@ module.exports = (
     },
     handler.authentication(callbackPath),
     tokenStorage.store,
-    (req, res) => res.redirect(appendQuery(req.paale_service, `token=${req.paale_token}`)),
+    (req, res) => {
+      if (useCookie) {
+        res.cookies.set('paale_token', req.paale_token, cookieOptions);
+      }
+      res.redirect(appendQuery(req.paale_service, `token=${req.paale_token}`));
+    },
   ]);
 
   app.get(identityPath, [
     (req, res, next) => {
+      if (useCookie) {
+        req.paale_token = req.cookies.get('paale_token', cookieOptions);
+        if (req.paale_token) {
+          return next();
+        }
+      }
+
       let parts = req.get('Authorization');
       if (!parts) {
         return res.status(401).send({ message: 'Unauthenticated' });
