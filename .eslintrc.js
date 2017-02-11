@@ -9,6 +9,7 @@ module.exports = {
   },
   "rules": {
     "consistent-return": 0,
-    "no-param-reassign": 0
+    "no-param-reassign": 0,
+    "import/no-extraneous-dependencies": [2, {"devDependencies": ["**/tests/**/*.js", "**/demo/**/*.js"]}]
   }
 };

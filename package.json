@@ -3,8 +3,10 @@
   "version": "0.1.0",
   "description": "",
   "scripts": {
+    "serve": "env $(cat demo/.env | grep -v ^# | xargs) node demo/server.js",
+    "nodemon": "nodemon --exec 'npm run serve' --watch demo",
     "test": "mocha tests/unit tests/api",
-    "lint": "eslint ./",
+    "lint": "eslint ./ demo/",
     "test-ci": "npm run lint && istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter spec tests/unit tests/api",
     "coverage": "istanbul cover node_modules/mocha/bin/_mocha --  --reporter dot tests/unit tests/api"
   },

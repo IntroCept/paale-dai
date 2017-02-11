@@ -3,6 +3,16 @@ node_js:
   - "6"
   - "7"
 cache: yarn
+
+sudo: required
+
 script:
   - npm run test-ci
 after_script: "npm install coveralls@2.10.0 && cat ./coverage/lcov.info | coveralls"
+
+deploy:
+  provider: script
+  script: demo/deploy.sh
+  all_branches: true
+#  on:
+#    branch: master
