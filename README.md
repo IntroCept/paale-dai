@@ -36,6 +36,9 @@ This is a [Node.js](https://nodejs.org/en/) module available through the
 $ npm install paale-dai
 ```
 
+## Demo
+A demo can be found at [//paale-dai.herokuapp.com/?service=http://app1.mycompany.com](paale-dai.herokuapp.com/?service=http://app1.mycompany.com)
+
 ## Basic concept
 ![Basic overview](docs/basic-flow.svg)
 

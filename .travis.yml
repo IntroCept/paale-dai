@@ -3,6 +3,18 @@ node_js:
   - "6"
   - "7"
 cache: yarn
+
+sudo: required
+
+services:
+  - docker
+
 script:
   - npm run test-ci
+
 after_script: "npm install coveralls@2.10.0 && cat ./coverage/lcov.info | coveralls"
+
+deploy:
+  provider: script
+  skip_cleanup: true
+  script: demo/deploy.sh
