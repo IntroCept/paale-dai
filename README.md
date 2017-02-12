@@ -36,8 +36,11 @@ This is a [Node.js](https://nodejs.org/en/) module available through the
 $ npm install paale-dai
 ```
 
+## Demo
+A demo can be found at [//paale-dai.herokuapp.com/?service=http://app1.mycompany.com](paale-dai.herokuapp.com/?service=http://app1.mycompany.com)
+
 ## Basic concept
-![Basic overview](docs/basic-flow.svg)
+![Basic overview](https://cdn.rawgit.com/IntroCept/paale-dai/18aa95e08c0620ff63778eaae82174fdd54aaa4e/docs/basic-flow.svg)
 
 ## Handler
 Handler is the object which actually handles the authentication. Currently, this modules only ships with `google-oauth2` handler which does authentication based on google oauth2. Similarly you can rewrite your own handler like based on facebook oauth2 flow.
