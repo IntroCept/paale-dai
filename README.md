@@ -116,6 +116,10 @@ In the above figure, after the application has received the token, it can make q
 Token storage are a way to store the tokens. They map a token to a user. You can store the tokens in a database by creating a custom token storage. 
 By default this package ships with only JWT based token storage. If you use it, the applications can validate the token themselves without querying the `paale-dai` all the time if they have the public key.
 
+## License
+
+[MIT](LICENSE)
+
 [npm-image]: https://img.shields.io/npm/v/paale-dai.svg
 [npm-url]: https://npmjs.org/package/paale-dai
 [coveralls-image]: https://coveralls.io/repos/github/IntroCept/paale-dai/badge.svg?branch=master
