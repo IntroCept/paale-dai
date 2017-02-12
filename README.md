@@ -7,6 +7,13 @@ paale-dai
 
 paale-dai is an express based middleware for creating SSO based authentication microservice.
 
+## Single sign-on (SSO)
+Single sign-on (SSO) is a property of access control of multiple related, but independent software systems. With this property a user logs in with a single ID and password to gain access to a connected system or systems without using different usernames or passwords, or in some configurations seamlessly sign on at each system.
+
+Other shared authentication schemes include OAuth, OpenID, OpenID Connect and Facebook Connect. However, these authentication schemes require the user to enter their login credentials each time they access a different site or application so they are not to be confused with SSO.
+
+[Source: Wikipedia](https://en.wikipedia.org/wiki/Single_sign-on)
+
 ## Example usage with google oauth2 authentication and JWT
 ```js
 const paale = require('paale-dai');
