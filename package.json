@@ -14,8 +14,12 @@
     "type": "git",
     "url": "git+https://github.com/IntroCept/paale-dai.git"
   },
-  "author": "",
-  "license": "ISC",
+  "keywords": ["authentication", "SSO", "middleware", "express-middleware", "Single sign-on"],
+  "author": {
+    "name" : "Ujjwal Ojha",
+    "email" : "bring2uo@gmail.com"
+  },
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/IntroCept/paale-dai/issues"
   },
