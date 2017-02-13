@@ -44,7 +44,7 @@ $ npm install paale-dai
 ```
 
 ## Demo
-A demo can be found at [//paale-dai.herokuapp.com/?service=http://app1.mycompany.com](paale-dai.herokuapp.com/?service=http://app1.mycompany.com)
+A demo can be found at [paale-dai.herokuapp.com/?service=http://app1.mycompany.com](http://paale-dai.herokuapp.com/?service=http://app1.mycompany.com)
 
 ## Basic concept
 ![Basic overview](https://cdn.rawgit.com/IntroCept/paale-dai/18aa95e08c0620ff63778eaae82174fdd54aaa4e/docs/basic-flow.svg)
