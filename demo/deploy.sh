@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Exit with nonzero exit code if anything fails
+set -e
+
 # install heroku cli
 wget -qO- https://toolbelt.heroku.com/install.sh | sh
 
