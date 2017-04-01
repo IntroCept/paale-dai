@@ -111,6 +111,7 @@ paale(
         useCookie = false,
         cookieOptions = {},
         app = express(),
+        tokenEncrypter = (token, service, req) => Promise.resolve(token),
       } = {}
 )
 ```
@@ -122,6 +123,30 @@ In the above figure, after the application has received the token, it can make q
 ## Token storage
 Token storage are a way to store the tokens. They map a token to a user. You can store the tokens in a database by creating a custom token storage. 
 By default this package ships with only JWT based token storage. If you use it, the applications can validate the token themselves without querying the `paale-dai` all the time if they have the public key.
+
+## Encrypting token
+The token is transferred to another domain through redirects in query string. 
+If you want to encrypt the token so that it cannot be used by untrusted source by any chance, you can use the option `tokenEncrypter` to provide a callback function which returns a promise of encrypted token.
+
+Here's a very simple example using AES algorithm:
+
+```js
+paale(
+      handler,
+      tokenStorage,
+      {
+        tokenEncrypter: (token, service, req) => {
+          const crypto = require('crypto');
+          const cipher = crypto.createCipher('aes192', 'a password');
+          
+          let encrypted = cipher.update('some clear text data', 'utf8', 'hex');
+          encrypted += cipher.final('hex');
+          
+          return Promise.resolve(encrypted);
+        },
+      }
+)
+```
 
 ## License
 

@@ -13,6 +13,7 @@ module.exports = (
     useCookie = false,
     cookieOptions = {},
     app = express(),
+    tokenEncrypter = token => Promise.resolve(token),
   } = {}
 ) => {
   app.get(landingPath, [
@@ -21,14 +22,15 @@ module.exports = (
       if (!service) {
         return res.status(400).send('Service not present');
       }
-      if (!serviceValidator(service)) {
+      if (!serviceValidator(service, req)) {
         return res.status(403).send('Invalid service');
       }
 
       if (useCookie) {
         const token = req.cookies.get('paale_token', cookieOptions);
         if (token) {
-          return res.redirect(appendQuery(service, `token=${token}`));
+          return tokenEncrypter(token, service, req)
+            .then(encryptedToken => res.redirect(appendQuery(service, `token=${encryptedToken}`)));
         }
       }
 
@@ -40,7 +42,7 @@ module.exports = (
   app.route(callbackPath)[callbackRouteMethod]([
     (req, res, next) => {
       const service = handler.parseService(req);
-      if (!service || !serviceValidator(service)) {
+      if (!service || !serviceValidator(service, req)) {
         return res.status(403).send('Invalid service');
       }
 
@@ -53,7 +55,8 @@ module.exports = (
       if (useCookie) {
         res.cookies.set('paale_token', req.paale_token, cookieOptions);
       }
-      res.redirect(appendQuery(req.paale_service, `token=${req.paale_token}`));
+      tokenEncrypter(req.paale_token, req.paale_service, req)
+        .then(encryptedToken => res.redirect(appendQuery(req.paale_service, `token=${encryptedToken}`)));
     },
   ]);
 
